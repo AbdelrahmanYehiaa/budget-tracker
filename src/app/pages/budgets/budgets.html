@@ -1,0 +1,60 @@
+<div class="page-container">
+  
+  <!-- Add Budget Form -->
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Set Monthly Budget</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="budgetForm" (ngSubmit)="onSubmit()" class="budget-form">
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Category (e.g., Groceries, Car Parts)</mat-label>
+          <input matInput formControlName="category">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Monthly Limit</mat-label>
+          <input matInput type="number" formControlName="limit">
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="budgetForm.invalid">
+          Add Budget
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Budgets Display Grid -->
+  <div class="budgets-grid">
+    <!-- The "budget" variable is created right here in the *ngFor -->
+    <mat-card class="budget-item" *ngFor="let budget of budgets$ | async">
+      <mat-card-header>
+        <mat-card-title>{{ budget.category }}</mat-card-title>
+        <button mat-icon-button color="warn" class="delete-btn" (click)="deleteBudget(budget.id!)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-header>
+      
+      <!-- This is the CORRECT card content section! -->
+      <mat-card-content>
+        <div class="budget-stats">
+          <p><strong>Limit:</strong> {{ budget.limit | currency }}</p>
+          
+          <!-- [ngClass] adds the red CSS class ONLY if spent is greater than limit -->
+          <p [ngClass]="{'over-budget-text': budget.spent > budget.limit}">
+            <strong>Spent:</strong> {{ budget.spent | currency }}
+          </p>
+        </div>
+
+        <!-- *ngIf shows this warning banner ONLY if they go over budget -->
+        <div class="warning-banner" *ngIf="budget.spent > budget.limit">
+          <mat-icon color="warn">warning</mat-icon>
+          <span>Limit Exceeded!</span>
+        </div>
+      </mat-card-content>
+      
+    </mat-card>
+  </div>
+
+</div>

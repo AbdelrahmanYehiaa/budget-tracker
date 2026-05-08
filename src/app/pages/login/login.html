@@ -1,0 +1,35 @@
+<div class="auth-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ isLoginMode ? 'Login' : 'Register' }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Bind form to component logic[cite: 5] -->
+      <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="example@mail.com">
+          <mat-error *ngIf="authForm.get('email')?.hasError('email')">Please enter a valid email</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput formControlName="password" type="password">
+          <mat-error *ngIf="authForm.get('password')?.hasError('minlength')">Password must be at least 6 characters</mat-error>
+        </mat-form-field>
+
+        <p *ngIf="errorMessage" class="error-text">{{ errorMessage }}</p>
+
+        <div class="actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="authForm.invalid">
+            {{ isLoginMode ? 'Sign In' : 'Sign Up' }}
+          </button>
+          <button mat-button type="button" (click)="toggleMode()">
+            {{ isLoginMode ? 'Need an account? Register' : 'Already have an account? Login' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

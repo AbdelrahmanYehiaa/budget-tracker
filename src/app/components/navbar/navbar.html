@@ -1,0 +1,26 @@
+<mat-toolbar color="primary">
+  <span>Budget Tracker</span>
+  <span class="spacer"></span>
+  
+  <!-- Use the async pipe to automatically subscribe/unsubscribe to the user$ observable -->
+  <ng-container *ngIf="authService.user$ | async as user; else loggedOut">
+    <span style="margin-right: 15px; font-size: 14px;">{{ user.email }}</span>
+    <a mat-button routerLink="/dashboard">Dashboard</a>
+    <a mat-button routerLink="/transactions">Transactions</a>
+    <a mat-button routerLink="/budgets">Budgets</a>
+    <a mat-button routerLink="/goals">Goals</a>
+    <a mat-button routerLink="/reports">Reports</a>
+
+
+
+    <button mat-icon-button (click)="themeService.toggleTheme()">
+      <mat-icon>{{ (themeService.isDarkMode | async) ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    </button>
+    
+    <button mat-button (click)="authService.logout()">Logout</button>
+  </ng-container>
+
+  <ng-template #loggedOut>
+    <a mat-button routerLink="/login">Login</a>
+  </ng-template>
+</mat-toolbar>

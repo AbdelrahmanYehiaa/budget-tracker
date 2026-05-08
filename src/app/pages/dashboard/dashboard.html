@@ -1,0 +1,111 @@
+<div class="page-container">
+  
+  <div class="welcome-header">
+    <h1>Welcome back, {{ userName }}!</h1>
+    <p>Here is your current financial overview.</p>
+  </div>
+
+  <!-- Row 1: High-Level Stats -->
+  <div class="stats-row">
+    <mat-card class="stat-card balance clickable" routerLink="/transactions">
+      <mat-card-content>
+        <mat-icon>account_balance_wallet</mat-icon>
+        <div class="stat-info">
+          <p>Current Balance</p>
+          <h2 [ngStyle]="{'color': currentBalance >= 0 ? '' : '#f44336'}">{{ currentBalance | currency }}</h2>
+        </div>
+        <mat-icon class="arrow-icon">chevron_right</mat-icon>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card income clickable" routerLink="/transactions">
+      <mat-card-content>
+        <mat-icon>trending_up</mat-icon>
+        <div class="stat-info">
+          <p>Total Income</p>
+          <h2 class="text-green">{{ totalIncome | currency }}</h2>
+        </div>
+        <mat-icon class="arrow-icon">chevron_right</mat-icon>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card expenses clickable" routerLink="/transactions">
+      <mat-card-content>
+        <mat-icon>trending_down</mat-icon>
+        <div class="stat-info">
+          <p>Total Expenses</p>
+          <h2 class="text-red">{{ totalExpenses | currency }}</h2>
+        </div>
+        <mat-icon class="arrow-icon">chevron_right</mat-icon>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Row 2: Your Chart -->
+  <mat-card class="chart-card">
+    <mat-card-header>
+      <mat-card-title>Income vs. Expenses</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="canvas-wrapper">
+        <canvas #financeChart></canvas>
+        <div *ngIf="totalIncome === 0 && totalExpenses === 0" class="empty-chart-state">
+          Add some transactions to see your chart!
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Row 3: Split Grid -->
+  <div class="dashboard-grid">
+    
+    <!-- Left Side: Recent Activity -->
+    <mat-card class="dash-section clickable" routerLink="/transactions">
+      <mat-card-header>
+        <mat-card-title>Recent Activity</mat-card-title>
+        <span class="section-hint">View all →</span>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="tx-list">
+          <div class="tx-item" *ngFor="let tx of recentTransactions">
+            <div class="tx-details">
+              <strong>{{ tx.title }}</strong>
+              <small>{{ tx.date | date:'mediumDate' }}</small>
+            </div>
+            <div class="tx-amount" [ngClass]="tx.type === 'income' ? 'text-green' : 'text-red'">
+              {{ tx.type === 'income' ? '+' : '-' }}{{ tx.amount | currency }}
+            </div>
+          </div>
+          <p *ngIf="recentTransactions.length === 0" class="empty-state">No transactions yet.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Right Side: Budget Health -->
+    <mat-card class="dash-section clickable" routerLink="/budgets">
+      <mat-card-header>
+        <mat-card-title>Budget Health</mat-card-title>
+        <span class="section-hint">Manage →</span>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="budget-list">
+          <div class="budget-item" *ngFor="let budget of budgets$ | async">
+            <div class="budget-header">
+              <span>{{ budget.category }}</span>
+              <span [ngClass]="{'text-red': budget.spent > budget.limit}">
+                {{ budget.spent | currency }} / {{ budget.limit | currency }}
+              </span>
+            </div>
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="getPercentage(budget.spent, budget.limit)"
+              [color]="budget.spent > budget.limit ? 'warn' : 'primary'">
+            </mat-progress-bar>
+          </div>
+          <p *ngIf="(budgets$ | async)?.length === 0" class="empty-state">No active budgets.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

@@ -1,0 +1,59 @@
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.tx-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .submit-btn {
+    height: 56px;
+    margin-bottom: 22px; // Aligns with inputs (accounting for error padding)
+    min-width: 100px;
+  }
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 16px 0 16px;
+
+  .search-box {
+    width: 300px;
+  }
+}
+
+table {
+  width: 100%;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  text-transform: capitalize;
+  font-weight: 500;
+
+  &.income {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  &.expense {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+}

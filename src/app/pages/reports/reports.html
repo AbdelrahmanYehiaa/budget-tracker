@@ -1,0 +1,175 @@
+<div class="page-container">
+
+  <!-- Page Title -->
+  <div class="page-header">
+    <h1>Financial Reports</h1>
+    <p>A summary of your income, expenses, and budget performance.</p>
+  </div>
+
+  <!-- Summary Stats Row -->
+  <div class="stats-row">
+    <mat-card class="stat-card income">
+      <mat-card-content>
+        <mat-icon>trending_up</mat-icon>
+        <div class="stat-info">
+          <p>Total Income</p>
+          <h2 class="text-green">{{ totalIncome | currency }}</h2>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card expenses">
+      <mat-card-content>
+        <mat-icon>trending_down</mat-icon>
+        <div class="stat-info">
+          <p>Total Expenses</p>
+          <h2 class="text-red">{{ totalExpenses | currency }}</h2>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card savings">
+      <mat-card-content>
+        <mat-icon>savings</mat-icon>
+        <div class="stat-info">
+          <p>Net Savings</p>
+          <h2 [ngStyle]="{'color': netSavings >= 0 ? '#4caf50' : '#f44336'}">{{ netSavings | currency }}</h2>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card rate">
+      <mat-card-content>
+        <mat-icon>percent</mat-icon>
+        <div class="stat-info">
+          <p>Savings Rate</p>
+          <h2 [ngStyle]="{'color': savingsRate >= 20 ? '#4caf50' : savingsRate >= 0 ? '#ff9800' : '#f44336'}">
+            {{ savingsRate | number:'1.0-0' }}%
+          </h2>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="charts-row">
+
+    <!-- Chart 1: Income vs Expenses (Monthly Bar Chart) -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Income vs. Expenses (Last 6 Months)</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="canvas-wrapper">
+          <canvas #incomeExpenseChart></canvas>
+          <div *ngIf="totalIncome === 0 && totalExpenses === 0" class="empty-chart-state">
+            No transaction data to display yet.
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Chart 2: Spending by Category (Doughnut) -->
+    <mat-card class="chart-card">
+      <mat-card-header>
+        <mat-card-title>Spending by Category</mat-card-title>
+        <!-- Month filter dropdown -->
+        <div class="chart-filter">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Filter by Month</mat-label>
+            <mat-select [(ngModel)]="selectedMonth" (selectionChange)="onMonthChange()">
+              <mat-option value="all">All Time</mat-option>
+              <mat-option *ngFor="let month of availableMonths" [value]="month.value">
+                {{ month.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="canvas-wrapper">
+          <canvas #categoryChart></canvas>
+          <div *ngIf="categoryLabels.length === 0" class="empty-chart-state">
+            No categorized expenses found.
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+  <!-- Budget Variance Table -->
+  <mat-card class="table-card">
+    <mat-card-header>
+      <mat-card-title>Budget Variance Report</mat-card-title>
+      <mat-card-subtitle>How your actual spending compares to your set limits</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+
+      <div *ngIf="budgetVariances.length === 0" class="empty-state">
+        No budgets set yet. Go to the Budgets page to add some!
+      </div>
+
+      <table mat-table [dataSource]="budgetVariances" class="variance-table mat-elevation-z0" *ngIf="budgetVariances.length > 0">
+
+        <!-- Category Column -->
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Category</th>
+          <td mat-cell *matCellDef="let row"><strong>{{ row.category }}</strong></td>
+        </ng-container>
+
+        <!-- Limit Column -->
+        <ng-container matColumnDef="limit">
+          <th mat-header-cell *matHeaderCellDef>Budget Limit</th>
+          <td mat-cell *matCellDef="let row">{{ row.limit | currency }}</td>
+        </ng-container>
+
+        <!-- Spent Column -->
+        <ng-container matColumnDef="spent">
+          <th mat-header-cell *matHeaderCellDef>Amount Spent</th>
+          <td mat-cell *matCellDef="let row"
+              [ngStyle]="{'color': row.spent > row.limit ? '#f44336' : 'inherit'}">
+            {{ row.spent | currency }}
+          </td>
+        </ng-container>
+
+        <!-- Variance Column -->
+        <ng-container matColumnDef="variance">
+          <th mat-header-cell *matHeaderCellDef>Remaining</th>
+          <td mat-cell *matCellDef="let row"
+              [ngStyle]="{'color': row.variance < 0 ? '#f44336' : '#4caf50', 'font-weight': 'bold'}">
+            {{ row.variance | currency }}
+          </td>
+        </ng-container>
+
+        <!-- Progress Column -->
+        <ng-container matColumnDef="progress">
+          <th mat-header-cell *matHeaderCellDef>Usage</th>
+          <td mat-cell *matCellDef="let row">
+            <mat-progress-bar
+              mode="determinate"
+              [value]="(row.spent / row.limit) * 100 | number:'1.0-0'"
+              [color]="row.spent > row.limit ? 'warn' : 'primary'">
+            </mat-progress-bar>
+            <small>{{ (row.spent / row.limit) * 100 | number:'1.0-0' }}%</small>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [ngClass]="getVarianceClass(row.status)">
+              {{ row.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="['category', 'limit', 'spent', 'variance', 'progress', 'status']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['category', 'limit', 'spent', 'variance', 'progress', 'status'];"></tr>
+      </table>
+
+    </mat-card-content>
+  </mat-card>
+
+</div>

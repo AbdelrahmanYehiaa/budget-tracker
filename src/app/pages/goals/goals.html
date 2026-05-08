@@ -1,0 +1,85 @@
+<div class="page-container">
+  <!-- NEW: Available Balance Banner -->
+  <mat-card class="balance-card">
+    <mat-card-content>
+      <h2>Available to Save: <strong>{{ availableBalance | currency }}</strong></h2>
+      <p *ngIf="availableBalance <= 0" class="warning-text">
+        You need to add Income on the Transactions page before you can save!
+      </p>
+    </mat-card-content>
+  </mat-card>
+  <!-- Add Goal Form -->
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Create a Financial Goal</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="goalForm" (ngSubmit)="onSubmit()" class="goal-form">
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Goal Name (e.g., New Laptop, Vacation)</mat-label>
+          <input matInput formControlName="title">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Target Amount</mat-label>
+          <input matInput type="number" formControlName="targetAmount">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Target Date</mat-label>
+          <input matInput type="date" formControlName="deadline">
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="goalForm.invalid">
+          Add Goal
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Goals Display Grid -->
+  <div class="goals-grid">
+    <mat-card class="goal-card" *ngFor="let goal of goals$ | async">
+      <mat-card-header>
+        <mat-card-title>{{ goal.title }}</mat-card-title>
+        <button mat-icon-button color="warn" class="delete-btn" (click)="deleteGoal(goal.id!)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="goal-info">
+          <span>Target: <strong>{{ goal.targetAmount | currency }}</strong></span>
+          <span class="deadline-text">By: {{ goal.deadline | date:'mediumDate' }}</span>
+        </div>
+
+        <!-- The Progress Bar -->
+        <mat-progress-bar 
+          mode="determinate" 
+          [value]="getPercentage(goal.currentAmount, goal.targetAmount)"
+          [color]="getPercentage(goal.currentAmount, goal.targetAmount) === 100 ? 'accent' : 'primary'">
+        </mat-progress-bar>
+
+        <div class="progress-stats">
+          <span>{{ goal.currentAmount | currency }} Saved</span>
+          <span>{{ getPercentage(goal.currentAmount, goal.targetAmount) | number:'1.0-0' }}%</span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Quick "Add Funds" row -->
+        <div class="add-funds-row">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <input matInput #fundInput type="number" placeholder="Amount to add">
+          </mat-form-field>
+          <button mat-stroked-button color="primary" 
+                 (click)="addFunds(goal, fundInput.value); fundInput.value=''">
+            Deposit
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>
